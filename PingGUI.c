@@ -1,9 +1,24 @@
 #include <gtk/gtk.h>
+#include <string.h>
+#include <stdio.h>
 
-void ping(GtkWidget *pingButton, GtkWidget *number1){
+void ping(GtkWidget *pingButton, GtkWidget *ipNumbers[]){
 
-	gtk_entry_get_text(GTK_ENTRY(number1));
-	system("ping 127.0.0.1 -c 1");
+	char buffer[255];
+	char *ipPart1, *ipPart2, *ipPart3, *ipPart4, *pings;
+
+	ipPart1 = (char*)gtk_entry_get_text(GTK_ENTRY(ipNumbers[0]));
+	ipPart2 = (char*)gtk_entry_get_text(GTK_ENTRY(ipNumbers[1]));
+	ipPart3 = (char*)gtk_entry_get_text(GTK_ENTRY(ipNumbers[2]));
+	ipPart4 = (char*)gtk_entry_get_text(GTK_ENTRY(ipNumbers[3]));
+
+	pings = (char*)gtk_entry_get_text(GTK_ENTRY(ipNumbers[4]));
+
+
+	snprintf(buffer, 255, "ping %s.%s.%s.%s -c %s | tee ping_res.txt", ipPart1, ipPart2, ipPart3, ipPart4, pings);
+	printf("%s",buffer);
+
+	system(buffer);
 
 	return;
 }
@@ -14,10 +29,9 @@ static void activate(GtkApplication* app, gpointer user_data)
 	GtkWidget *window;
 	GtkWidget *grid;
 	GtkWidget *number1, *number2, *number3, *number4, *pingCount;
+	GtkWidget *ipNumbers[5];
 	GtkWidget *ipLabel, *pingCountLabel;
 	GtkWidget *pingButton;
-
-	int pings;
 	
 	//Set up the window
 	window = gtk_application_window_new(app);
@@ -47,6 +61,10 @@ static void activate(GtkApplication* app, gpointer user_data)
 	number4 = gtk_entry_new();
 	gtk_grid_attach(GTK_GRID(grid), number4, 3,3,1,1);
 
+	ipNumbers[0] = number1;
+	ipNumbers[1] = number2;
+	ipNumbers[2] = number3;
+	ipNumbers[3] = number4;
 
 	pingCountLabel = gtk_label_new("Ping Count");
 	gtk_grid_attach(GTK_GRID(grid), pingCountLabel, 0, 4, 2, 1);
@@ -54,11 +72,13 @@ static void activate(GtkApplication* app, gpointer user_data)
 	pingCount = gtk_entry_new();
 	gtk_grid_attach(GTK_GRID(grid), pingCount, 0,5,1,1);
 
+	ipNumbers[4] = pingCount;
+
 	//Create the pingButton
 	pingButton = gtk_button_new_with_label("Ping!");
 
 	//Use clciked signal from ping button to call ping function
-	g_signal_connect(pingButton, "clicked", G_CALLBACK(ping), number1);
+	g_signal_connect(pingButton, "clicked", G_CALLBACK(ping), ipNumbers);
 	gtk_grid_attach(GTK_GRID(grid), pingButton, 2,5,2,1); //attach ping button to grid
 
 
